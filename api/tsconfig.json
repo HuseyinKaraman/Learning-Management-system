@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "outDir": "./dist",
+    "rootDir": "./",
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    // other options
+  },
+  "include": ["./**/*.ts"],
+  "exclude": ["node_modules"]
+}
