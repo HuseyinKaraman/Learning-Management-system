@@ -5,6 +5,7 @@ dotenv.config();
 export const PORT = process.env.PORT;
 export const API_URL = process.env.API_URL;
 export const API_PREFIX = process.env.API_PREFIX;
+export const NODE_ENV = process.env.NODE_ENV; 
 export const PRODUCTION_SERVER_URL = process.env.PRODUCTION_SERVER_URL;
 export const DEVELOPMENT_SERVER_URL = process.env.DEVELOPMENT_SERVER_URL;
 export const DATABASE_URL:string = process.env.DATABASE_URL || '';
