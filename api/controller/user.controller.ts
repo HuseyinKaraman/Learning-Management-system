@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import User from "../models/user.model";
+import User, { IUser } from "../models/user.model";
 import { CustomError } from "../middlewares/errorHandler.middleware";
 import { CatchAsyncError } from "../middlewares/catchAsyncErrors.middleware";
-import { createActivationToken } from "../utils/auth.utils";
+import { createActivationToken, verifyActivationToken } from "../utils/auth.utils";
 import {sendEmail} from "../services/email.service"
 
 
@@ -57,3 +57,45 @@ export const registrationUser = CatchAsyncError(
     }
   }
 );
+
+
+interface IActivationRequest {
+  activation_token: string;
+  activation_code: string;
+} 
+
+// activate user
+export const activateUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const {activation_token, activation_code} = req.body as IActivationRequest;
+      
+      const newUser: {user: IUser, activationCode: string} = verifyActivationToken(activation_token);
+      
+      if (newUser.activationCode !== activation_code) {
+        return next(new CustomError("Invalid activation code", 400));
+      } 
+
+      const {username, email, password} = newUser.user;
+      
+      const isEmailExist = await User.findOne({ email });
+      if (isEmailExist) {
+        return next(new CustomError("Email already exists", 400));
+      }
+      
+      const user = await User.create({
+        username,
+        email,
+        password
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Account has been activated",
+      });
+
+    } catch (error: any) {
+      return next(new CustomError(error?.message, 500));
+    }
+  }
+)

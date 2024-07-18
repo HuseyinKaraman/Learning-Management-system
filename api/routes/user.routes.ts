@@ -1,6 +1,5 @@
 import { Router } from "express";
-import {registrationUser} from "../controller/user.controller"
-
+import { activateUser, registrationUser } from "../controller/user.controller";
 
 const router = Router();
 
@@ -11,9 +10,9 @@ const router = Router();
  *  description: User api routes
  */
 
-
 router.post("/registration", registrationUser);
 
+router.post("/activate-user", activateUser);
 
 
 export default router;
