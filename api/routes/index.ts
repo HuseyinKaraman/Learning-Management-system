@@ -1,6 +1,7 @@
 import {Request, Response, NextFunction, Application, Router } from "express";
 import { API_PREFIX } from "../constants/environment";
 import { CustomError, globalErrorHandler } from "../middlewares/errorHandler.middleware";
+import userRoute from "./user.routes";
 
 const initializeRoutes = (app: Application) => {
   /**
@@ -23,6 +24,9 @@ const initializeRoutes = (app: Application) => {
   });
 
   const routes: Router = Router();
+
+  routes.use("/user", userRoute);
+  
 
   app.use(`${API_PREFIX}`, routes);
 
