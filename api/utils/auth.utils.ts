@@ -1,7 +1,7 @@
-import jwt, { Secret } from "jsonwebtoken";
+import jwt, { JwtPayload, Secret } from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import { IUser } from "../models/user.model";
-import { ACCESS_TOKEN_EXPIRE, ACCESS_TOKEN_SECRET, ACTIVATION_SECRET, NODE_ENV, REFRESH_TOKEN_EXPIRE } from "../constants/environment";
+import { ACCESS_TOKEN_EXPIRE, ACCESS_TOKEN_SECRET, ACTIVATION_SECRET, NODE_ENV, REFRESH_TOKEN_EXPIRE, REFRESH_TOKEN_SECRET } from "../constants/environment";
 import { Response } from "express";
 import { redis } from "../config/redis";
 
@@ -45,6 +45,14 @@ const signAccessToken = (id: string) => {
 
 const signRefreshToken = (id: string) => {
     return jwt.sign({ id }, ACCESS_TOKEN_SECRET || "", { expiresIn: "7d" });
+}
+
+export const verifyAccessToken = (access_token:string) => {
+    return jwt.verify(access_token, ACCESS_TOKEN_SECRET as string) as JwtPayload;
+}
+
+export const verifyRefreshToken = (refresh_token:string) => {
+    return jwt.verify(refresh_token, REFRESH_TOKEN_SECRET as string) as JwtPayload;
 }
 
 
