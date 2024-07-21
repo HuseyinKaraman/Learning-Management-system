@@ -142,7 +142,7 @@ export const logoutUser = CatchAsyncError(
         res.cookie("access_token", "", {expires: new Date(Date.now()),httpOnly: true})
         res.cookie("refresh_token", "", {expires: new Date(Date.now()),httpOnly: true})
 
-        const userId = req.user?._id as string
+        const userId = req.user?._id as string || "";
         redis.del(userId);
 
         res.status(200).json({
