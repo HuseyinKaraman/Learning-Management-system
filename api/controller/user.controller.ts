@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User, { IUser } from "../models/user.model";
 import { CustomError } from "../middlewares/errorHandler.middleware";
 import { CatchAsyncError } from "../middlewares/catchAsyncErrors.middleware";
-import { comparePassword, createActivationToken, hashPassword, sendToken, verifyActivationToken } from "../utils/auth.utils";
+import { comparePassword, createActivationToken, hashPassword, sendToken, verifyActivationToken, verifyRefreshToken } from "../utils/auth.utils";
 import {sendEmail} from "../services/email.service"
 import { redis } from "../config/redis";
 
@@ -134,7 +134,6 @@ export const loginUser = CatchAsyncError(
   }
 )
 
-
 // logout user
 export const logoutUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -149,6 +148,32 @@ export const logoutUser = CatchAsyncError(
           success: true,
           message: "Logged out successfully",
         });
+    } catch (error: any) {
+      return next(new CustomError(error?.message, 500));
+    }
+  }
+)
+
+// update access token
+export const updateAccessToken = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const refreshToken = req.cookies.refresh_token;
+        if (!refreshToken) {
+          return next(new CustomError("Please login again", 401));
+        }
+        
+        const decoded = verifyRefreshToken(refreshToken);
+        if (!decoded) {
+          return next(new CustomError("Please login again", 401));
+        }
+
+        const session = await redis.get(decoded.id as string);
+        if (!session) {
+          return next(new CustomError("Please login again", 401));
+        }
+
+        sendToken(JSON.parse(session), 200, res, true);
     } catch (error: any) {
       return next(new CustomError(error?.message, 500));
     }
