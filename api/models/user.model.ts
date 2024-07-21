@@ -1,5 +1,4 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
-import bcrypt from "bcryptjs";
 
 const emailRegexPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -59,20 +58,6 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     timestamps: true
 });
 
-// Hash password before saving user
-userSchema.pre<IUser>("save", async function (next) {
-    if (!this.isModified("password")) { // It detects whether the path changed or not
-        next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-});
-
-// Compare user password
-userSchema.methods.comparePassword = async function (enteredPassword: string): Promise<boolean> {
-    return await bcrypt.compare(enteredPassword, this.password);
-};
 
 const User: Model<IUser> = mongoose.model<IUser>("User", userSchema);
 export default User;
