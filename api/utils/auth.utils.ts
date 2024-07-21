@@ -40,11 +40,11 @@ export const verifyActivationToken = (activation_token:string) => {
 
 
 const signAccessToken = (id: string) => {
-    return jwt.sign({ id: id }, ACCESS_TOKEN_SECRET || "", { expiresIn: "15m" });
+    return jwt.sign({ id: id }, ACCESS_TOKEN_SECRET || "");
 }
 
 const signRefreshToken = (id: string) => {
-    return jwt.sign({ id }, ACCESS_TOKEN_SECRET || "", { expiresIn: "7d" });
+    return jwt.sign({ id }, REFRESH_TOKEN_SECRET || "");
 }
 
 export const verifyAccessToken = (access_token:string) => {
@@ -64,12 +64,14 @@ interface ITokenOptions {
    secure?: boolean;
 }
 
-export const sendToken = (user: IUser, statusCode: number, res:Response) => {
+export const sendToken = async (user: IUser, statusCode: number, res:Response, options:boolean=false) => {
     const accessToken = signAccessToken(user._id as string);
     const refreshToken = signRefreshToken(user._id as string);
     
     // upload session to redis
-    redis.set(user._id as string, JSON.stringify(user) as string);
+    if(!options) {
+        redis.set(user._id as string, JSON.stringify(user) as string);
+    }
 
 
     // parse environment variables to integrates with fallback values
@@ -78,15 +80,15 @@ export const sendToken = (user: IUser, statusCode: number, res:Response) => {
 
     // options for cookies
     const accessTokenOptions: ITokenOptions = {
-        expires: new Date(Date.now() + accessTokenExpire * 1000),
-        maxAge: accessTokenExpire * 1000,
+        expires: new Date(Date.now() + accessTokenExpire * 60 * 1000),
+        maxAge: accessTokenExpire * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
     }
 
     const refreshTokenOptions: ITokenOptions = {
-        expires: new Date(Date.now() + refreshTokenExpire * 1000),
-        maxAge: refreshTokenExpire * 1000,
+        expires: new Date(Date.now() + refreshTokenExpire * 24 * 60 * 60 * 1000),
+        maxAge: refreshTokenExpire * 24 * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
     }
