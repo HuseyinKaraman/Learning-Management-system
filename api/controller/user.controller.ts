@@ -4,6 +4,7 @@ import { CustomError } from "../middlewares/errorHandler.middleware";
 import { CatchAsyncError } from "../middlewares/catchAsyncErrors.middleware";
 import { comparePassword, createActivationToken, hashPassword, sendToken, verifyActivationToken } from "../utils/auth.utils";
 import {sendEmail} from "../services/email.service"
+import { redis } from "../config/redis";
 
 
 // register user
@@ -138,16 +139,11 @@ export const loginUser = CatchAsyncError(
 export const logoutUser = CatchAsyncError(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
-        res.cookie("access_token", "", {
-          expires: new Date(Date.now()),
-          httpOnly: true,
-        })
+        res.cookie("access_token", "", {expires: new Date(Date.now()),httpOnly: true})
+        res.cookie("refresh_token", "", {expires: new Date(Date.now()),httpOnly: true})
 
-        res.cookie("refresh_token", "", {
-          expires: new Date(Date.now()),
-          httpOnly: true,
-        })
-
+        const userId = req.user?._id as string
+        redis.del(userId);
 
         res.status(200).json({
           success: true,
