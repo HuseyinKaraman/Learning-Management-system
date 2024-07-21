@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { activateUser, loginUser, logoutUser, registrationUser } from "../controller/user.controller";
-import { isAuthenticated } from "../middlewares/auth";
 
 const router = Router();
 
@@ -17,7 +16,7 @@ router.post("/activate-user", activateUser);
 
 router.post("/login", loginUser);
 
-router.get("/logout", isAuthenticated, logoutUser);
+router.get("/logout", logoutUser);
 
 
 
