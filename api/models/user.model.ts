@@ -1,4 +1,5 @@
 import mongoose, { Document, Model, Schema } from "mongoose";
+import { USER_ROLES } from "../constants/types";
 
 const emailRegexPattern: RegExp = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -44,8 +45,8 @@ const userSchema: Schema<IUser> = new mongoose.Schema({
     }, 
     role: {
         type: String,
-        enum: ["user", "admin"],
-        default: "user"
+        enum: USER_ROLES,
+        default: USER_ROLES.USER
     },
     isVerified: {
         type: Boolean,

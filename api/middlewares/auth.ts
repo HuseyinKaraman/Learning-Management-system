@@ -1,9 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { CatchAsyncError } from "./catchAsyncErrors.middleware";
 import  {CustomError} from "./errorHandler.middleware";
-import { ACCESS_TOKEN_SECRET } from "../constants/environment";
 import { verifyAccessToken } from "../utils/auth.utils";
 import { redis } from "../config/redis";
+import { USER_ROLES } from "../constants/types";
 
 // is user authenticated?
 export const isAuthenticated = CatchAsyncError(async (req: Request, res: Response, next: NextFunction) => {
@@ -30,3 +30,12 @@ export const isAuthenticated = CatchAsyncError(async (req: Request, res: Respons
     next();
 })
 
+// validate user role:
+export const authorizeRoles = (...roles: string[]) => {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!roles.includes(req?.user?.role || "" )) {
+            return next(new CustomError(`Role : ${req.user?.role} is not allowed to access this resource`, 403));
+        }
+        next();
+    }
+}
