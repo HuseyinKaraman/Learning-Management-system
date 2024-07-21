@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import User, { IUser } from "../models/user.model";
 import { CustomError } from "../middlewares/errorHandler.middleware";
 import { CatchAsyncError } from "../middlewares/catchAsyncErrors.middleware";
-import { createActivationToken, verifyActivationToken } from "../utils/auth.utils";
+import { comparePassword, createActivationToken, hashPassword, sendToken, verifyActivationToken } from "../utils/auth.utils";
 import {sendEmail} from "../services/email.service"
 
 
@@ -83,10 +83,12 @@ export const activateUser = CatchAsyncError(
         return next(new CustomError("Email already exists", 400));
       }
       
+      const hashedPassword = await hashPassword(password);
+
       const user = await User.create({
         username,
         email,
-        password
+        password: hashedPassword
       });
 
       res.status(201).json({
@@ -94,6 +96,63 @@ export const activateUser = CatchAsyncError(
         message: "Account has been activated",
       });
 
+    } catch (error: any) {
+      return next(new CustomError(error?.message, 500));
+    }
+  }
+)
+
+interface ILoginRequest {
+  email: string;
+  password: string;
+}
+
+// login user
+export const loginUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+   try {
+    const { email, password } = req.body as ILoginRequest;
+    if (!email || !password) {
+      return next(new CustomError("Please enter email and password", 400));
+    }
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return next(new CustomError("Invalid email or password", 401));
+    }
+
+    const isPasswordMatch = await comparePassword(password, user.password);
+    if (!isPasswordMatch) {
+      return next(new CustomError("Invalid email or password", 401));
+    }
+
+    sendToken(user, 200, res);
+   }catch (error: any) {
+    return next(new CustomError(error?.message, 500));
+   }
+  }
+)
+
+
+// logout user
+export const logoutUser = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        res.cookie("access_token", "", {
+          expires: new Date(Date.now()),
+          httpOnly: true,
+        })
+
+        res.cookie("refresh_token", "", {
+          expires: new Date(Date.now()),
+          httpOnly: true,
+        })
+
+
+        res.status(200).json({
+          success: true,
+          message: "Logged out successfully",
+        });
     } catch (error: any) {
       return next(new CustomError(error?.message, 500));
     }

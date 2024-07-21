@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { activateUser, registrationUser } from "../controller/user.controller";
+import { activateUser, loginUser, logoutUser, registrationUser } from "../controller/user.controller";
 
 const router = Router();
 
@@ -13,6 +13,11 @@ const router = Router();
 router.post("/registration", registrationUser);
 
 router.post("/activate-user", activateUser);
+
+router.post("/login", loginUser);
+
+router.get("/logout", logoutUser);
+
 
 
 export default router;
