@@ -5,6 +5,7 @@ import { CatchAsyncError } from "../middlewares/catchAsyncErrors.middleware";
 import { comparePassword, createActivationToken, hashPassword, sendToken, verifyActivationToken, verifyRefreshToken } from "../utils/auth.utils";
 import {sendEmail} from "../services/email.service"
 import { redis } from "../config/redis";
+import { getUserById } from "../services/user.service";
 
 
 // register user
@@ -174,6 +175,26 @@ export const updateAccessToken = CatchAsyncError(
         }
 
         sendToken(JSON.parse(session), 200, res, true);
+    } catch (error: any) {
+      return next(new CustomError(error?.message, 500));
+    }
+  }
+)
+
+// get user info
+export const getUserInfo = CatchAsyncError(
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?._id;
+      const user = await getUserById(userId as string);
+      if (!user) {
+        return next(new CustomError("User not found", 404));
+      }
+
+      res.status(200).json({
+        success: true,
+        user
+      });
     } catch (error: any) {
       return next(new CustomError(error?.message, 500));
     }
