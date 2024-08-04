@@ -80,8 +80,8 @@ export const sendToken = async (user: IUser, statusCode: number, res:Response, o
 
     // options for cookies
     const accessTokenOptions: ITokenOptions = {
-        expires: new Date(Date.now() + accessTokenExpire * 60 * 1000),
-        maxAge: accessTokenExpire * 60 * 1000,
+        expires: new Date(Date.now() + accessTokenExpire * 60 *60 * 1000),
+        maxAge: accessTokenExpire * 60 * 60 * 1000,
         httpOnly: true,
         sameSite: "lax",
     }

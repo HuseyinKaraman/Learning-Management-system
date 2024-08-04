@@ -1,7 +1,10 @@
-import User from "../models/user.model";
+import { redis } from "../config/redis";
 
 // get user by id
 export const getUserById = async (id: string) => {
-    const user = await User.findById(id).select("-password");
-    return user;
+    const userJson = await redis.get(id);
+    if (!userJson) {
+        return null;
+    }
+    return JSON.parse(userJson)
 }
