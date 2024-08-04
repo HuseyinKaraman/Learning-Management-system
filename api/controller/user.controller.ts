@@ -174,6 +174,9 @@ export const updateAccessToken = CatchAsyncError(
           return next(new CustomError("Please login again", 401));
         }
 
+        const user = JSON.parse(session);
+        req.user = user;
+
         sendToken(JSON.parse(session), 200, res, true);
     } catch (error: any) {
       return next(new CustomError(error?.message, 500));
@@ -219,6 +222,48 @@ export const socialAuth = CatchAsyncError(
       }else {
         sendToken(user, 200, res);
       }
+    } catch (error: any) {
+      return next(new CustomError(error?.message, 500));
+    }
+  }
+)
+
+// update user info
+interface IUpdateUserInfo {
+  name?: string;
+  email?: string;
+}
+
+export const updateUserInfo = CatchAsyncError(  
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const userId = req.user?._id;
+      const user = await User.findById(userId);
+      if (!user) {
+        return next(new CustomError("User not found", 404));
+      }
+      
+      const { name, email } = req.body as IUpdateUserInfo;
+      
+      if (email && user) {
+        const isEmailExist = await User.findOne({ email });
+        if (isEmailExist) {
+          return next(new CustomError("Email already exists", 400));
+        }  
+        user.email = email;
+      }
+      
+      if (name && user) {
+        user.username = name;
+      }
+
+      await user?.save();
+      await redis.set(userId as string, JSON.stringify(user));
+
+      res.status(201).json({
+        success: true,
+        user
+      });
     } catch (error: any) {
       return next(new CustomError(error?.message, 500));
     }
