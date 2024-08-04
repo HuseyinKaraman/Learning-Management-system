@@ -2,7 +2,8 @@ import express from "express";
 import rateLimit from "express-rate-limit";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import { PRODUCTION_SERVER_URL,DEVELOPMENT_SERVER_URL } from "../constants/environment.ts";
+import {v2 as cloudinary} from "cloudinary";
+import { PRODUCTION_SERVER_URL,DEVELOPMENT_SERVER_URL, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET } from "../constants/environment.ts";
 
 
 const limiter = rateLimit({
@@ -16,6 +17,13 @@ export default function (app: express.Application) {
     // cookie parser
     app.use(cookieParser());
     
+    // cloudinary
+    cloudinary.config({
+        cloud_name: CLOUDINARY_CLOUD_NAME,
+        api_key: CLOUDINARY_API_KEY,
+        api_secret: CLOUDINARY_API_SECRET
+    });
+
     // body parser
     app.use(express.json({limit: '50mb'}));
     app.use(express.urlencoded({limit: '50mb', extended: true}));
